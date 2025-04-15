@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  profiles-app:
+    build: .
+    container_name: profiles-app
+    ports:
+      - "3005:3005"
+    environment:
+      - PROFILES_API_URL=http://192.168.50.84:3000/profiles
+    restart: unless-stopped
