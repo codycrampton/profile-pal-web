@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { GridSize } from "@/types";
-import { Grid2X2, Grid3X3, Grid4X4 } from "lucide-react";
+import { Grid, Grid2X2, Grid3X3 } from "lucide-react";
 
 interface GridSizeControlProps {
   value: GridSize;
@@ -15,7 +15,7 @@ const GridSizeControl: React.FC<GridSizeControlProps> = ({ value, onChange }) =>
       if (val) onChange(parseInt(val) as GridSize);
     }}>
       <ToggleGroupItem value="1" aria-label="One column">
-        <Grid2X2 className="h-4 w-4" />
+        <Grid className="h-4 w-4" />
       </ToggleGroupItem>
       
       <ToggleGroupItem value="2" aria-label="Two columns">
@@ -27,7 +27,7 @@ const GridSizeControl: React.FC<GridSizeControlProps> = ({ value, onChange }) =>
       </ToggleGroupItem>
       
       <ToggleGroupItem value="4" aria-label="Four columns">
-        <Grid4X4 className="h-4 w-4" />
+        <Grid3X3 className="h-4 w-4 transform scale-75" />
       </ToggleGroupItem>
     </ToggleGroup>
   );
