@@ -1,10 +1,15 @@
-
 import { Profile, ProfileFormData } from "@/types";
 import { toast } from "sonner";
 
 // API configuration 
 const API_ENDPOINT = 'http://192.168.50.84:3000';
 const localStorageKey = 'profileAppData';
+
+// Default headers including the manually-set Access-Control-Allow-Origin header
+const defaultHeaders = {
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': 'http://192.168.50.84:3005'
+};
 
 // Initialize localStorage with mock data if empty
 const initializeLocalStorage = () => {
@@ -79,7 +84,10 @@ const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout 
 // Fetches sample data if API fails
 const getSampleData = async () => {
   try {
-    const response = await fetch('/sample-profiles.json');
+    const response = await fetch('/sample-profiles.json', {
+      method: 'GET',
+      headers: defaultHeaders
+    });
     if (!response.ok) throw new Error('Cannot load sample data');
     return await response.json();
   } catch (error) {
@@ -97,7 +105,7 @@ export const api = {
     // Create a sample-profiles.json file in public folder if not exists
     // This will be used as fallback data when API is not available
     const publicPath = '/sample-profiles.json';
-    fetch(publicPath, { method: 'HEAD' })
+    fetch(publicPath, { method: 'HEAD', headers: defaultHeaders })
       .catch(() => {
         console.log('Creating sample profiles file for backup');
         // The file will be created when needed
@@ -111,7 +119,7 @@ export const api = {
       console.log('Fetching profiles from API...');
       const response = await fetchWithTimeout(`${API_ENDPOINT}/profiles`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...defaultHeaders },
         // Add cache busting parameter to avoid caching issues
         cache: 'no-store'
       });
@@ -156,7 +164,7 @@ export const api = {
       // Try to fetch from remote API first
       const response = await fetchWithTimeout(`${API_ENDPOINT}/profile/${id}`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...defaultHeaders },
         cache: 'no-store'
       });
       
@@ -184,7 +192,7 @@ export const api = {
       // Try to create on remote API first
       const response = await fetchWithTimeout(`${API_ENDPOINT}/profile`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...defaultHeaders },
         body: JSON.stringify(profile)
       });
       
@@ -220,7 +228,7 @@ export const api = {
       // Try to update on remote API first
       const response = await fetchWithTimeout(`${API_ENDPOINT}/profile/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...defaultHeaders },
         body: JSON.stringify(profile)
       });
       
@@ -253,7 +261,8 @@ export const api = {
     try {
       // Try to delete on remote API first
       const response = await fetchWithTimeout(`${API_ENDPOINT}/profile/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { ...defaultHeaders }
       });
       
       await handleApiResponse(response);
