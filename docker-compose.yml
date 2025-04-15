@@ -1,3 +1,4 @@
+
 version: '3.8'
 
 services:
@@ -9,3 +10,15 @@ services:
     environment:
       - PROFILES_API_URL=http://192.168.50.84:3000/profiles
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - profiles-network
+
+networks:
+  profiles-network:
+    driver: bridge

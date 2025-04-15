@@ -1,3 +1,4 @@
+
 # Welcome to your Lovable project
 
 ## Project info
@@ -36,19 +37,33 @@ npm i
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Docker Deployment
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+This project can be easily deployed using Docker and Docker Compose.
 
-**Use GitHub Codespaces**
+### Using Docker Compose
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```sh
+# Build and start the container
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop the container
+docker-compose down
+```
+
+### Using Portainer Stacks
+
+1. In Portainer, navigate to Stacks and click "Add stack"
+2. Either upload the docker-compose.yml file or paste its contents
+3. Configure any environment variables if needed
+4. Deploy the stack
+
+### Environment Variables
+
+- `PROFILES_API_URL`: URL to the profiles API (default: http://192.168.50.84:3000/profiles)
 
 ## What technologies are used for this project?
 
@@ -59,10 +74,13 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+- Docker for containerization
 
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/a8d8d77f-43d9-4de7-a8cd-391e279e3148) and click on Share -> Publish.
+
+Alternatively, use the Docker deployment instructions above.
 
 ## Can I connect a custom domain to my Lovable project?
 
