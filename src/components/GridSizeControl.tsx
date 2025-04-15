@@ -1,8 +1,13 @@
 
-import { useState } from "react";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { 
+  Grid, 
+  Grid2X2, 
+  Grid3X3, 
+  LayoutGrid
+} from "lucide-react";
 import { GridSize } from "@/types";
-import { Grid, Grid2X2, Grid3X3 } from "lucide-react";
 
 interface GridSizeControlProps {
   value: GridSize;
@@ -11,25 +16,44 @@ interface GridSizeControlProps {
 
 const GridSizeControl: React.FC<GridSizeControlProps> = ({ value, onChange }) => {
   return (
-    <ToggleGroup type="single" value={value.toString()} onValueChange={(val) => {
-      if (val) onChange(parseInt(val) as GridSize);
-    }}>
-      <ToggleGroupItem value="1" aria-label="One column">
+    <div className="flex space-x-1">
+      <Button
+        variant={value === 1 ? "default" : "outline"}
+        size="icon"
+        className="w-8 h-8"
+        onClick={() => onChange(1)}
+        title="Single column"
+      >
         <Grid className="h-4 w-4" />
-      </ToggleGroupItem>
-      
-      <ToggleGroupItem value="2" aria-label="Two columns">
+      </Button>
+      <Button
+        variant={value === 2 ? "default" : "outline"}
+        size="icon"
+        className="w-8 h-8"
+        onClick={() => onChange(2)}
+        title="Two columns"
+      >
         <Grid2X2 className="h-4 w-4" />
-      </ToggleGroupItem>
-      
-      <ToggleGroupItem value="3" aria-label="Three columns">
+      </Button>
+      <Button
+        variant={value === 3 ? "default" : "outline"}
+        size="icon"
+        className="w-8 h-8"
+        onClick={() => onChange(3)}
+        title="Three columns"
+      >
         <Grid3X3 className="h-4 w-4" />
-      </ToggleGroupItem>
-      
-      <ToggleGroupItem value="4" aria-label="Four columns">
-        <Grid3X3 className="h-4 w-4 transform scale-75" />
-      </ToggleGroupItem>
-    </ToggleGroup>
+      </Button>
+      <Button
+        variant={value === 4 ? "default" : "outline"}
+        size="icon"
+        className="w-8 h-8"
+        onClick={() => onChange(4)}
+        title="Four columns"
+      >
+        <LayoutGrid className="h-4 w-4" />
+      </Button>
+    </div>
   );
 };
 

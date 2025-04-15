@@ -59,7 +59,7 @@ const normalizeProfile = (profile: any): Profile => {
 };
 
 // Fetch with timeout to avoid long-hanging requests
-const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout = 5000) => {
+const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout = 8000) => {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
   
@@ -111,7 +111,9 @@ export const api = {
       console.log('Fetching profiles from API...');
       const response = await fetchWithTimeout(`${API_ENDPOINT}/profiles`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        // Add cache busting parameter to avoid caching issues
+        cache: 'no-store'
       });
       
       const data = await handleApiResponse(response);
@@ -129,6 +131,7 @@ export const api = {
       const sampleData = await getSampleData();
       if (sampleData && sampleData.length > 0) {
         console.log('Using sample data:', sampleData.length);
+        toast.info(`Using ${sampleData.length} offline profiles (sample data)`);
         return sampleData.map((profile: any) => normalizeProfile(profile));
       }
       
@@ -153,7 +156,8 @@ export const api = {
       // Try to fetch from remote API first
       const response = await fetchWithTimeout(`${API_ENDPOINT}/profile/${id}`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store'
       });
       
       const data = await handleApiResponse(response);

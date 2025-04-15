@@ -11,9 +11,7 @@ import { SortDirection, SortField, FilterOptions } from "@/types";
 import { Label } from "@/components/ui/label";
 import { ArrowDownUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Checkbox } from "@/components/ui/checkbox";
 
 interface SortFilterControlsProps {
   sortField: SortField;
@@ -45,14 +43,14 @@ const SortFilterControls: React.FC<SortFilterControlsProps> = ({
   const handleTraitFilterChange = (trait: string) => {
     onFilterChange({
       ...filterOptions,
-      traits: trait
+      traits: trait === "all" ? undefined : trait
     });
   };
 
   const handleHairColorFilterChange = (color: string) => {
     onFilterChange({
       ...filterOptions,
-      hairColor: color
+      hairColor: color === "all" ? undefined : color
     });
   };
 
@@ -141,14 +139,14 @@ const SortFilterControls: React.FC<SortFilterControlsProps> = ({
             <div className="space-y-2">
               <Label>Traits</Label>
               <Select
-                value={filterOptions.traits || ""}
-                onValueChange={(value) => handleTraitFilterChange(value || undefined)}
+                value={filterOptions.traits || "all"}
+                onValueChange={handleTraitFilterChange}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select trait" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All traits</SelectItem>
+                  <SelectItem value="all">All traits</SelectItem>
                   {availableTraits.map(trait => (
                     <SelectItem key={trait} value={trait}>{trait}</SelectItem>
                   ))}
@@ -159,14 +157,14 @@ const SortFilterControls: React.FC<SortFilterControlsProps> = ({
             <div className="space-y-2">
               <Label>Hair Color</Label>
               <Select
-                value={filterOptions.hairColor || ""}
-                onValueChange={(value) => handleHairColorFilterChange(value || undefined)}
+                value={filterOptions.hairColor || "all"}
+                onValueChange={handleHairColorFilterChange}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select hair color" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All colors</SelectItem>
+                  <SelectItem value="all">All colors</SelectItem>
                   {availableHairColors.map(color => (
                     <SelectItem key={color} value={color}>{color}</SelectItem>
                   ))}
