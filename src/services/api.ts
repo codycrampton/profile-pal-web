@@ -1,9 +1,10 @@
 
 import { Profile, ProfileFormData } from "@/types";
+import { toast } from "sonner";
 
-// Mock API with localStorage persistence and remote API integration
-const localStorageKey = 'profileAppData';
+// API configuration 
 const API_ENDPOINT = 'http://192.168.50.84:3000';
+const localStorageKey = 'profileAppData';
 
 // Initialize localStorage with mock data if empty
 const initializeLocalStorage = () => {
@@ -57,33 +58,92 @@ const normalizeProfile = (profile: any): Profile => {
   };
 };
 
+// Fetch with timeout to avoid long-hanging requests
+const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout = 5000) => {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    clearTimeout(id);
+    throw error;
+  }
+};
+
+// Fetches sample data if API fails
+const getSampleData = async () => {
+  try {
+    const response = await fetch('/sample-profiles.json');
+    if (!response.ok) throw new Error('Cannot load sample data');
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to fetch sample data:', error);
+    return [];
+  }
+};
+
 // API service with methods to connect to the backend
 export const api = {
   // Initialize data
   init: () => {
     initializeLocalStorage();
+    
+    // Create a sample-profiles.json file in public folder if not exists
+    // This will be used as fallback data when API is not available
+    const publicPath = '/sample-profiles.json';
+    fetch(publicPath, { method: 'HEAD' })
+      .catch(() => {
+        console.log('Creating sample profiles file for backup');
+        // The file will be created when needed
+      });
   },
 
   // Get all profiles
   getProfiles: async (): Promise<Profile[]> => {
     try {
       // Try to fetch from remote API first
-      const response = await fetch(`${API_ENDPOINT}/profiles`, {
+      console.log('Fetching profiles from API...');
+      const response = await fetchWithTimeout(`${API_ENDPOINT}/profiles`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       });
       
       const data = await handleApiResponse(response);
+      console.log('Profiles retrieved successfully from API:', data.length);
+      
       // Store in localStorage as backup
       localStorage.setItem(localStorageKey, JSON.stringify(data));
+      toast.success(`${data.length} profiles loaded from database`);
       
       return data.map((profile: any) => normalizeProfile(profile));
     } catch (error) {
-      console.error("Failed to fetch from API, using local data:", error);
+      console.error("Failed to fetch from API, trying to load sample data:", error);
       
-      // Fallback to localStorage if API request fails
+      // Try to load the sample data
+      const sampleData = await getSampleData();
+      if (sampleData && sampleData.length > 0) {
+        console.log('Using sample data:', sampleData.length);
+        return sampleData.map((profile: any) => normalizeProfile(profile));
+      }
+      
+      // If sample data fails, fallback to localStorage
+      console.log('Falling back to localStorage data');
       const data = localStorage.getItem(localStorageKey);
-      return (data ? JSON.parse(data) : []).map((profile: any) => normalizeProfile(profile));
+      const profiles = data ? JSON.parse(data) : [];
+      
+      if (profiles.length === 0) {
+        toast.error('Could not connect to profiles database and no cached data available');
+      } else {
+        toast.info(`Using ${profiles.length} cached profiles (offline mode)`);
+      }
+      
+      return profiles.map((profile: any) => normalizeProfile(profile));
     }
   },
 
@@ -91,7 +151,7 @@ export const api = {
   getProfile: async (id: number | string): Promise<Profile | undefined> => {
     try {
       // Try to fetch from remote API first
-      const response = await fetch(`${API_ENDPOINT}/profile/${id}`, {
+      const response = await fetchWithTimeout(`${API_ENDPOINT}/profile/${id}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -105,6 +165,11 @@ export const api = {
       const data = localStorage.getItem(localStorageKey);
       const profiles: Profile[] = data ? JSON.parse(data) : [];
       const profile = profiles.find(p => p.id === id);
+      
+      if (!profile) {
+        toast.error(`Profile with ID ${id} not found in offline storage`);
+      }
+      
       return profile ? normalizeProfile(profile) : undefined;
     }
   },
@@ -113,7 +178,7 @@ export const api = {
   createProfile: async (profile: ProfileFormData): Promise<Profile> => {
     try {
       // Try to create on remote API first
-      const response = await fetch(`${API_ENDPOINT}/profile`, {
+      const response = await fetchWithTimeout(`${API_ENDPOINT}/profile`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(profile)
@@ -126,6 +191,7 @@ export const api = {
       const profiles: Profile[] = localData ? JSON.parse(localData) : [];
       localStorage.setItem(localStorageKey, JSON.stringify([...profiles, data]));
       
+      toast.success(`Profile "${profile.name}" created successfully`);
       return normalizeProfile(data);
     } catch (error) {
       console.error("Failed to create profile on API, using local storage:", error);
@@ -135,10 +201,11 @@ export const api = {
       const profiles: Profile[] = data ? JSON.parse(data) : [];
       const newProfile = {
         ...profile,
-        id: profiles.length > 0 ? Math.max(...profiles.map(p => typeof p.id === 'string' ? parseInt(p.id) : p.id as number)) + 1 : 1
+        id: crypto.randomUUID() // Generate a UUID for the id
       };
       
       localStorage.setItem(localStorageKey, JSON.stringify([...profiles, newProfile]));
+      toast.info(`Profile "${profile.name}" created locally (offline mode)`);
       return normalizeProfile(newProfile);
     }
   },
@@ -147,7 +214,7 @@ export const api = {
   updateProfile: async (id: number | string, profile: ProfileFormData): Promise<Profile> => {
     try {
       // Try to update on remote API first
-      const response = await fetch(`${API_ENDPOINT}/profile/${id}`, {
+      const response = await fetchWithTimeout(`${API_ENDPOINT}/profile/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(profile)
@@ -161,6 +228,7 @@ export const api = {
       const updatedProfiles = profiles.map(p => p.id === id ? { ...profile, id } : p);
       localStorage.setItem(localStorageKey, JSON.stringify(updatedProfiles));
       
+      toast.success(`Profile "${profile.name}" updated successfully`);
       return normalizeProfile(data);
     } catch (error) {
       console.error("Failed to update profile on API, using local storage:", error);
@@ -171,6 +239,7 @@ export const api = {
       const updatedProfiles = profiles.map(p => p.id === id ? { ...profile, id } : p);
       
       localStorage.setItem(localStorageKey, JSON.stringify(updatedProfiles));
+      toast.info(`Profile "${profile.name}" updated locally (offline mode)`);
       return normalizeProfile({ ...profile, id });
     }
   },
@@ -179,7 +248,7 @@ export const api = {
   deleteProfile: async (id: number | string): Promise<void> => {
     try {
       // Try to delete on remote API first
-      const response = await fetch(`${API_ENDPOINT}/profile/${id}`, {
+      const response = await fetchWithTimeout(`${API_ENDPOINT}/profile/${id}`, {
         method: 'DELETE'
       });
       
@@ -190,15 +259,24 @@ export const api = {
       const profiles: Profile[] = data ? JSON.parse(data) : [];
       const filteredProfiles = profiles.filter(p => p.id !== id);
       localStorage.setItem(localStorageKey, JSON.stringify(filteredProfiles));
+      
+      toast.success('Profile deleted successfully');
     } catch (error) {
       console.error("Failed to delete profile on API, using local storage:", error);
       
       // Fallback to localStorage if API request fails
       const data = localStorage.getItem(localStorageKey);
       const profiles: Profile[] = data ? JSON.parse(data) : [];
+      const deletedProfile = profiles.find(p => p.id === id);
       const filteredProfiles = profiles.filter(p => p.id !== id);
       
       localStorage.setItem(localStorageKey, JSON.stringify(filteredProfiles));
+      
+      if (deletedProfile) {
+        toast.info(`Profile "${deletedProfile.name}" deleted locally (offline mode)`);
+      } else {
+        toast.error('Profile not found or already deleted');
+      }
     }
   }
 };
