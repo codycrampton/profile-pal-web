@@ -1,10 +1,11 @@
 
 import React from "react";
-import { Profile } from "@/types";
+import { Profile, GridSize } from "@/types";
 import ProfileCard from "./ProfileCard";
 
 interface ProfileListProps {
   profiles: Profile[];
+  gridSize: GridSize;
   onProfileEdit?: (profile: Profile) => void;
   onProfileDelete?: (profile: Profile) => void;
   onProfileClick?: (profile: Profile) => void;
@@ -12,20 +13,37 @@ interface ProfileListProps {
 
 const ProfileList: React.FC<ProfileListProps> = ({
   profiles,
+  gridSize,
   onProfileEdit,
   onProfileDelete,
   onProfileClick,
 }) => {
+  // Map grid size to tailwind class
+  const getGridClass = () => {
+    switch (gridSize) {
+      case 1:
+        return "grid-cols-1";
+      case 2:
+        return "grid-cols-1 sm:grid-cols-2";
+      case 3:
+        return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
+      case 4:
+        return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+      default:
+        return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+    }
+  };
+
   if (profiles.length === 0) {
     return (
-      <div className="text-center py-10 text-gray-500">
+      <div className="text-center py-10 text-gray-500 dark:text-gray-400">
         No profiles found
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className={`grid ${getGridClass()} gap-6`}>
       {profiles.map((profile) => (
         <ProfileCard
           key={profile.id}
