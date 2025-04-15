@@ -2,7 +2,7 @@ import { Profile, ProfileFormData } from "@/types";
 import { toast } from "sonner";
 
 // API configuration 
-const API_ENDPOINT = 'http://192.168.50.84:3000';
+const API_ENDPOINT = '/sample-profiles.json'; // Update to point to the local JSON file
 const localStorageKey = 'profileAppData';
 
 // Default headers including the manually-set Access-Control-Allow-Origin header
@@ -81,21 +81,6 @@ const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout 
   }
 };
 
-// Fetches sample data if API fails
-const getSampleData = async () => {
-  try {
-    const response = await fetch('/sample-profiles.json', {
-      method: 'GET',
-      headers: defaultHeaders
-    });
-    if (!response.ok) throw new Error('Cannot load sample data');
-    return await response.json();
-  } catch (error) {
-    console.error('Failed to fetch sample data:', error);
-    return [];
-  }
-};
-
 // API service with methods to connect to the backend
 export const api = {
   // Initialize data
@@ -115,74 +100,22 @@ export const api = {
   // Get all profiles
   getProfiles: async (): Promise<Profile[]> => {
     try {
-      // Try to fetch from remote API first
-      console.log('Fetching profiles from API...');
-      const response = await fetchWithTimeout(`${API_ENDPOINT}/profiles`, {
+      console.log('Fetching profiles from local JSON file...');
+      const response = await fetch(API_ENDPOINT, {
         method: 'GET',
-        headers: { ...defaultHeaders },
-        // Add cache busting parameter to avoid caching issues
-        cache: 'no-store'
+        headers: { 'Content-Type': 'application/json' }
       });
-      
-      const data = await handleApiResponse(response);
-      console.log('Profiles retrieved successfully from API:', data.length);
-      
-      // Store in localStorage as backup
-      localStorage.setItem(localStorageKey, JSON.stringify(data));
-      toast.success(`${data.length} profiles loaded from database`);
-      
-      return data.map((profile: any) => normalizeProfile(profile));
-    } catch (error) {
-      console.error("Failed to fetch from API, trying to load sample data:", error);
-      
-      // Try to load the sample data
-      const sampleData = await getSampleData();
-      if (sampleData && sampleData.length > 0) {
-        console.log('Using sample data:', sampleData.length);
-        toast.info(`Using ${sampleData.length} offline profiles (sample data)`);
-        return sampleData.map((profile: any) => normalizeProfile(profile));
-      }
-      
-      // If sample data fails, fallback to localStorage
-      console.log('Falling back to localStorage data');
-      const data = localStorage.getItem(localStorageKey);
-      const profiles = data ? JSON.parse(data) : [];
-      
-      if (profiles.length === 0) {
-        toast.error('Could not connect to profiles database and no cached data available');
-      } else {
-        toast.info(`Using ${profiles.length} cached profiles (offline mode)`);
-      }
-      
-      return profiles.map((profile: any) => normalizeProfile(profile));
-    }
-  },
 
-  // Get a single profile
-  getProfile: async (id: number | string): Promise<Profile | undefined> => {
-    try {
-      // Try to fetch from remote API first
-      const response = await fetchWithTimeout(`${API_ENDPOINT}/profile/${id}`, {
-        method: 'GET',
-        headers: { ...defaultHeaders },
-        cache: 'no-store'
-      });
-      
-      const data = await handleApiResponse(response);
-      return normalizeProfile(data);
-    } catch (error) {
-      console.error("Failed to fetch profile from API, using local data:", error);
-      
-      // Fallback to localStorage if API request fails
-      const data = localStorage.getItem(localStorageKey);
-      const profiles: Profile[] = data ? JSON.parse(data) : [];
-      const profile = profiles.find(p => p.id === id);
-      
-      if (!profile) {
-        toast.error(`Profile with ID ${id} not found in offline storage`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch profiles: ${response.statusText}`);
       }
-      
-      return profile ? normalizeProfile(profile) : undefined;
+
+      const data = await response.json();
+      console.log('Profiles retrieved successfully:', data.length);
+      return data;
+    } catch (error) {
+      console.error('Failed to fetch profiles:', error);
+      return [];
     }
   },
 
