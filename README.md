@@ -1,91 +1,48 @@
 
-# Welcome to your Lovable project
+# Profiles App
 
-## Project info
+A web application for managing profiles with Docker deployment support.
 
-**URL**: https://lovable.dev/projects/a8d8d77f-43d9-4de7-a8cd-391e279e3148
+## Features
 
-## How can I edit this code?
+- Profile management (create, read, update, delete)
+- Search and filter profiles
+- Responsive design
+- Dark/light mode
 
-There are several ways of editing your application.
+## Technical Stack
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/a8d8d77f-43d9-4de7-a8cd-391e279e3148) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-## Docker Deployment
-
-This project can be easily deployed using Docker and Docker Compose.
-
-### Using Docker Compose
-
-```sh
-# Build and start the container
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop the container
-docker-compose down
-```
-
-### Using Portainer Stacks
-
-1. In Portainer, navigate to Stacks and click "Add stack"
-2. Either upload the docker-compose.yml file or paste its contents
-3. Configure any environment variables if needed
-4. Deploy the stack
-
-### Environment Variables
-
-- `PROFILES_API_URL`: URL to the profiles API (default: http://192.168.50.84:3000/profiles)
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- React + TypeScript
+- Tailwind CSS & Shadcn UI
+- Vite for building
 - Docker for containerization
 
-## How can I deploy this project?
+## Deployment Instructions
 
-Simply open [Lovable](https://lovable.dev/projects/a8d8d77f-43d9-4de7-a8cd-391e279e3148) and click on Share -> Publish.
+### Local Development
 
-Alternatively, use the Docker deployment instructions above.
+1. Clone this repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-## Can I connect a custom domain to my Lovable project?
+### Docker Deployment
 
-Yes, you can!
+1. Build and run with Docker Compose:
+   ```bash
+   docker-compose up -d
+   ```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+2. Access the application at `http://localhost:3005`
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+The application will be available at `http://localhost:3005` and can be added to Portainer stacks for easy management.
+
+## Data Storage
+
+The profile data is stored in the repository in the `public/profiles-data.json` file. This file serves as the main data source for the application. When running the application, the data is loaded from this file and cached in the browser's local storage.
+

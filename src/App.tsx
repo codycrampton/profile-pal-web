@@ -10,9 +10,7 @@ import { ThemeProvider } from "@/hooks/use-theme";
 import { useEffect } from "react";
 import { api } from "@/services/api";
 
-// Initialize the API when the app loads
-api.init();
-
+// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -26,7 +24,12 @@ const queryClient = new QueryClient({
 const App = () => {
   // Initialize API on app startup
   useEffect(() => {
-    api.init();
+    const initializeApp = async () => {
+      await api.init();
+      console.log('Application initialized with data from repository');
+    };
+    
+    initializeApp();
   }, []);
 
   return (
