@@ -30,6 +30,8 @@ import ThemeToggle from "@/components/ThemeToggle";
 import GridSizeControl from "@/components/GridSizeControl";
 import SortFilterControls from "@/components/SortFilterControls";
 import { ThemeProvider } from "@/hooks/use-theme";
+import ProfileDetail from "@/components/ProfileDetail";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -49,6 +51,7 @@ const Index = () => {
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({});
   const [availableTraits, setAvailableTraits] = useState<string[]>([]);
   const [availableHairColors, setAvailableHairColors] = useState<string[]>([]);
+  const isMobile = useIsMobile();
   
   const { toast } = useToast();
 
@@ -58,7 +61,7 @@ const Index = () => {
       setLoading(true);
       try {
         // Initialize local storage with mock data (if needed)
-        api.init();
+        await api.init();
         
         // Fetch profiles
         const data = await api.getProfiles();
@@ -297,20 +300,23 @@ const Index = () => {
     const savedGridSize = localStorage.getItem('gridSize');
     if (savedGridSize) {
       setGridSize(parseInt(savedGridSize) as GridSize);
+    } else {
+      // Default to smaller grid on mobile
+      setGridSize(isMobile ? 1 : 3);
     }
-  }, []);
+  }, [isMobile]);
 
   return (
     <ThemeProvider>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-        <header className="bg-white dark:bg-gray-800 shadow-sm py-6 transition-colors duration-200">
+        <header className="bg-white dark:bg-gray-800 shadow-sm py-4 md:py-6 sticky top-0 z-10 transition-colors duration-200">
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <h1 className="text-2xl font-bold text-profile-purple dark:text-profile-lightPurple">
                   Profile Manager
                 </h1>
-                <p className="text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm md:text-base">
                   View and manage your profile collection
                 </p>
               </div>
@@ -324,11 +330,11 @@ const Index = () => {
                 <div className="flex items-center space-x-2">
                   <ThemeToggle />
                   
-                  <Button onClick={refreshProfiles} variant="outline" className="ml-2 dark:border-gray-700 dark:text-gray-300">
+                  <Button onClick={refreshProfiles} variant="outline" className="ml-2 dark:border-gray-700 dark:text-gray-300" size={isMobile ? "sm" : "default"}>
                     <RefreshCw className="h-4 w-4" />
                   </Button>
                   
-                  <Button onClick={handleAddProfile}>
+                  <Button onClick={handleAddProfile} size={isMobile ? "sm" : "default"}>
                     <UserPlus className="h-4 w-4 mr-2" />
                     Add Profile
                   </Button>
@@ -351,7 +357,7 @@ const Index = () => {
               
               <div className="flex items-center">
                 <span className="text-sm text-gray-500 dark:text-gray-400 mr-2">
-                  Grid Size:
+                  Grid:
                 </span>
                 <GridSizeControl 
                   value={gridSize} 
@@ -362,7 +368,7 @@ const Index = () => {
           </div>
         </header>
         
-        <main className="container mx-auto px-4 py-8">
+        <main className="container mx-auto px-4 py-6 md:py-8">
           {loading ? (
             <div className="text-center py-20">
               <RefreshCw className="h-10 w-10 animate-spin mx-auto text-profile-purple dark:text-profile-lightPurple" />
@@ -419,180 +425,13 @@ const Index = () => {
         </AlertDialog>
         
         {/* Profile Detail Dialog */}
-        <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-          <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{selectedProfile?.name}</DialogTitle>
-              {selectedProfile?.work && (
-                <DialogDescription>
-                  {selectedProfile.work}
-                  {selectedProfile.isFictional === 1 && " (Fictional)"}
-                </DialogDescription>
-              )}
-            </DialogHeader>
-            
-            {selectedProfile && (
-              <div className="py-4">
-                <div className="mb-4 overflow-hidden rounded-md">
-                  <img 
-                    src={selectedProfile.photo_url || selectedProfile.imageURL} 
-                    alt={selectedProfile.name}
-                    className="w-full object-cover h-[300px]"
-                  />
-                </div>
-                
-                <div className="space-y-4">
-                  {/* Measurements */}
-                  <div className="border-b pb-3 dark:border-gray-700">
-                    {(selectedProfile.braSize || selectedProfile.bra_size) && (
-                      <p className="text-sm">
-                        <span className="font-semibold">Bra Size:</span> {selectedProfile.braSize || selectedProfile.bra_size}
-                      </p>
-                    )}
-                    
-                    {(selectedProfile.measurement_1 || selectedProfile.bust) && 
-                     (selectedProfile.measurement_2 || selectedProfile.waist) && 
-                     (selectedProfile.measurement_3 || selectedProfile.hips) && (
-                      <p className="text-sm mt-1">
-                        <span className="font-semibold">Measurements:</span>{" "}
-                        {selectedProfile.measurement_1 || selectedProfile.bust}-
-                        {selectedProfile.measurement_2 || selectedProfile.waist}-
-                        {selectedProfile.measurement_3 || selectedProfile.hips}
-                        {selectedProfile.isMetric === 1 ? " cm" : " in"}
-                      </p>
-                    )}
-                    
-                    {selectedProfile.height && (
-                      <p className="text-sm mt-1">
-                        <span className="font-semibold">Height:</span>{" "}
-                        {selectedProfile.height}
-                        {selectedProfile.isMetric === 1 ? " cm" : " in"}
-                      </p>
-                    )}
-                    
-                    {selectedProfile.hairColor && (
-                      <p className="text-sm mt-1">
-                        <span className="font-semibold">Hair Color:</span>{" "}
-                        {selectedProfile.hairColor}
-                      </p>
-                    )}
-                    
-                    {selectedProfile.traits && (
-                      <div className="mt-2">
-                        <span className="font-semibold text-sm">Traits:</span>{" "}
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {selectedProfile.traits.split(';').map((trait, index) => (
-                            <span key={index} className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded">
-                              {trait}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Social Links */}
-                  <div>
-                    <h3 className="text-sm font-semibold mb-2">Links</h3>
-                    <div className="space-y-2">
-                      {(selectedProfile.instagram_url || selectedProfile.instagram) && (
-                        <p className="text-sm truncate">
-                          <span className="font-semibold">Instagram:</span>{" "}
-                          <a 
-                            href={selectedProfile.instagram_url || `https://instagram.com/${selectedProfile.instagram}`} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-blue-500 hover:underline"
-                          >
-                            {selectedProfile.instagram_url || selectedProfile.instagram}
-                          </a>
-                        </p>
-                      )}
-                      
-                      {(selectedProfile.twitter_url || selectedProfile.twitter) && (
-                        <p className="text-sm truncate">
-                          <span className="font-semibold">Twitter:</span>{" "}
-                          <a 
-                            href={selectedProfile.twitter_url || `https://twitter.com/${selectedProfile.twitter}`} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-blue-500 hover:underline"
-                          >
-                            {selectedProfile.twitter_url || selectedProfile.twitter}
-                          </a>
-                        </p>
-                      )}
-                      
-                      {(selectedProfile.tiktok_url || selectedProfile.tiktok) && (
-                        <p className="text-sm truncate">
-                          <span className="font-semibold">TikTok:</span>{" "}
-                          <a 
-                            href={selectedProfile.tiktok_url || `https://tiktok.com/@${selectedProfile.tiktok}`} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-blue-500 hover:underline"
-                          >
-                            {selectedProfile.tiktok_url || selectedProfile.tiktok}
-                          </a>
-                        </p>
-                      )}
-                      
-                      {selectedProfile.threads && (
-                        <p className="text-sm truncate">
-                          <span className="font-semibold">Threads:</span>{" "}
-                          <a 
-                            href={selectedProfile.threads} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-blue-500 hover:underline"
-                          >
-                            {selectedProfile.threads}
-                          </a>
-                        </p>
-                      )}
-                      
-                      {selectedProfile.babepedia && (
-                        <p className="text-sm truncate">
-                          <span className="font-semibold">Babepedia:</span>{" "}
-                          <a 
-                            href={selectedProfile.babepedia} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-blue-500 hover:underline"
-                          >
-                            {selectedProfile.babepedia}
-                          </a>
-                        </p>
-                      )}
-                      
-                      {selectedProfile.wikiURL && (
-                        <p className="text-sm truncate">
-                          <span className="font-semibold">Wiki:</span>{" "}
-                          <a 
-                            href={selectedProfile.wikiURL} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-blue-500 hover:underline"
-                          >
-                            {selectedProfile.wikiURL}
-                          </a>
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* Notes */}
-                  {selectedProfile.notes && (
-                    <div className="mt-4 pt-3 border-t dark:border-gray-700">
-                      <h3 className="text-sm font-semibold mb-2">Notes</h3>
-                      <p className="text-sm whitespace-pre-line">{selectedProfile.notes}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
+        {selectedProfile && (
+          <ProfileDetail
+            profile={selectedProfile}
+            open={detailDialogOpen}
+            onOpenChange={setDetailDialogOpen}
+          />
+        )}
       </div>
     </ThemeProvider>
   );

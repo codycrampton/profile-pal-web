@@ -2,12 +2,15 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { 
-  Grid, 
+  LayoutList, 
   Grid2X2, 
   Grid3X3, 
-  LayoutGrid
+  LayoutGrid,
+  Columns,
+  Rows
 } from "lucide-react";
 import { GridSize } from "@/types";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface GridSizeControlProps {
   value: GridSize;
@@ -15,6 +18,8 @@ interface GridSizeControlProps {
 }
 
 const GridSizeControl: React.FC<GridSizeControlProps> = ({ value, onChange }) => {
+  const isMobile = useIsMobile();
+
   return (
     <div className="flex space-x-1">
       <Button
@@ -24,7 +29,7 @@ const GridSizeControl: React.FC<GridSizeControlProps> = ({ value, onChange }) =>
         onClick={() => onChange(1)}
         title="Single column"
       >
-        <Grid className="h-4 w-4" />
+        <LayoutList className="h-4 w-4" />
       </Button>
       <Button
         variant={value === 2 ? "default" : "outline"}
@@ -53,6 +58,26 @@ const GridSizeControl: React.FC<GridSizeControlProps> = ({ value, onChange }) =>
       >
         <LayoutGrid className="h-4 w-4" />
       </Button>
+      <Button
+        variant={value === 5 ? "default" : "outline"}
+        size="icon"
+        className="w-8 h-8"
+        onClick={() => onChange(5)}
+        title="Five columns (large screens)"
+      >
+        <Columns className="h-4 w-4" />
+      </Button>
+      {!isMobile && (
+        <Button
+          variant={value === 6 ? "default" : "outline"}
+          size="icon"
+          className="w-8 h-8"
+          onClick={() => onChange(6)}
+          title="Six columns (extra large screens)"
+        >
+          <Rows className="h-4 w-4 rotate-90" />
+        </Button>
+      )}
     </div>
   );
 };

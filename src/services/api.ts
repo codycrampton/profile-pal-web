@@ -32,6 +32,31 @@ const initializeLocalStorage = async () => {
   }
 };
 
+// Function to persist changes back to the "GitHub" repository
+// In a real environment, this would use GitHub API, but for this demo we'll simulate it
+const persistChangesToRepository = async (profiles: Profile[]) => {
+  try {
+    console.log('Persisting profile changes to repository:', profiles.length);
+    
+    // In a real implementation, this would be a call to GitHub API
+    // For now, we'll just log this action and update local storage
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(profiles));
+    
+    // This is where you would typically make a GitHub API call to update the repository file
+    // For example:
+    // const response = await fetch('/api/github/update-profiles', {
+    //   method: 'POST',
+    //   headers: defaultHeaders,
+    //   body: JSON.stringify(profiles)
+    // });
+    
+    return true;
+  } catch (error) {
+    console.error('Failed to persist changes to repository:', error);
+    return false;
+  }
+};
+
 // Convert from API format to our internal format if needed
 const normalizeProfile = (profile: any): Profile => {
   return {
@@ -66,6 +91,27 @@ const normalizeProfile = (profile: any): Profile => {
     underbust: profile.underbust,
     threads: profile.threads
   };
+};
+
+// Format height function
+export const formatHeight = (height: number | undefined, isMetric: number | undefined): string => {
+  if (height === undefined || height === 0) return '';
+  
+  if (isMetric) {
+    return `${height} cm`;
+  } else {
+    // Convert decimal feet to feet and inches
+    const feet = Math.floor(height);
+    const inches = Math.round((height - feet) * 12);
+    
+    if (feet === 0) {
+      return `${inches}"`;
+    } else if (inches === 0) {
+      return `${feet}'`;
+    } else {
+      return `${feet}' ${inches}"`;
+    }
+  }
 };
 
 // API service with methods
@@ -114,9 +160,14 @@ export const api = {
       const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
       const profiles: Profile[] = localData ? JSON.parse(localData) : [];
       
-      // Add the new profile and update local storage
+      // Add the new profile
       const updatedProfiles = [...profiles, newProfile];
+      
+      // Save to local storage
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedProfiles));
+      
+      // Persist changes to repository
+      await persistChangesToRepository(updatedProfiles);
       
       toast.success(`Profile "${profile.name}" created successfully`);
       return normalizeProfile(newProfile);
@@ -136,7 +187,12 @@ export const api = {
       
       // Update the profile
       const updatedProfiles = profiles.map(p => p.id === id ? { ...profile, id } : p);
+      
+      // Save to local storage
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedProfiles));
+      
+      // Persist changes to repository
+      await persistChangesToRepository(updatedProfiles);
       
       toast.success(`Profile "${profile.name}" updated successfully`);
       return normalizeProfile({ ...profile, id });
@@ -157,9 +213,14 @@ export const api = {
       // Find the profile to be deleted for the toast message
       const deletedProfile = profiles.find(p => p.id === id);
       
-      // Remove the profile and update local storage
+      // Remove the profile
       const filteredProfiles = profiles.filter(p => p.id !== id);
+      
+      // Save to local storage
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(filteredProfiles));
+      
+      // Persist changes to repository
+      await persistChangesToRepository(filteredProfiles);
       
       if (deletedProfile) {
         toast.success(`Profile "${deletedProfile.name}" deleted successfully`);
