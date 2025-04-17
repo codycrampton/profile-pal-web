@@ -38,6 +38,7 @@ export type ProfileFormData = Omit<Profile, 'id'>;
 export type SortField = 
   | 'name' 
   | 'braSize' 
+  | 'bra_size'  // Added bra_size as a valid sort field 
   | 'bust' 
   | 'waist' 
   | 'hips' 

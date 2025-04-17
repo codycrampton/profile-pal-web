@@ -5,6 +5,7 @@ import { toast } from "sonner";
 // API configuration 
 const API_ENDPOINT = '/profiles-data.json'; // Local JSON file in the repository
 const LOCAL_STORAGE_KEY = 'profileAppData';
+const GITHUB_API_URL = 'https://api.github.com/repos/YOUR_USERNAME/YOUR_REPO_NAME/contents/public/profiles-data.json';
 
 // Default headers
 const defaultHeaders = {
@@ -32,23 +33,49 @@ const initializeLocalStorage = async () => {
   }
 };
 
-// Function to persist changes back to the "GitHub" repository
-// In a real environment, this would use GitHub API, but for this demo we'll simulate it
+// Function to persist changes back to the GitHub repository
+// Note: This is a simulated function. For production, you need to set up a server or GitHub integration
 const persistChangesToRepository = async (profiles: Profile[]) => {
   try {
     console.log('Persisting profile changes to repository:', profiles.length);
     
-    // In a real implementation, this would be a call to GitHub API
-    // For now, we'll just log this action and update local storage
+    // Update local storage
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(profiles));
     
-    // This is where you would typically make a GitHub API call to update the repository file
-    // For example:
-    // const response = await fetch('/api/github/update-profiles', {
-    //   method: 'POST',
-    //   headers: defaultHeaders,
-    //   body: JSON.stringify(profiles)
-    // });
+    // In a real production environment, you would need to:
+    // 1. Set up a server endpoint or GitHub Actions to handle the GitHub API calls
+    // 2. Authenticate with GitHub using a personal access token or OAuth
+    // 3. Get the current file, encode/decode content, and update with the new data
+    
+    /* 
+    Example of how the actual GitHub API call would work:
+    
+    // Get the current file first to get the SHA
+    const getCurrentFile = await fetch(GITHUB_API_URL, {
+      headers: {
+        'Authorization': 'token YOUR_GITHUB_TOKEN'
+      }
+    });
+    const currentFileData = await getCurrentFile.json();
+    
+    // Update the file with new content
+    const response = await fetch(GITHUB_API_URL, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'token YOUR_GITHUB_TOKEN',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: 'Update profiles data',
+        content: btoa(JSON.stringify(profiles, null, 2)), // Base64 encode the content
+        sha: currentFileData.sha
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to update GitHub repository');
+    }
+    */
     
     return true;
   } catch (error) {

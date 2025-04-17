@@ -127,13 +127,16 @@ const Index = () => {
     
     // Then sort the filtered results
     const sorted = [...results].sort((a, b) => {
-      let valueA: any = a[sortField];
-      let valueB: any = b[sortField];
+      let valueA: any;
+      let valueB: any;
       
-      // Handle special case for braSize
+      // Handle special case for braSize/bra_size
       if (sortField === 'braSize' || sortField === 'bra_size') {
         valueA = a.braSize || a.bra_size;
         valueB = b.braSize || b.bra_size;
+      } else {
+        valueA = a[sortField];
+        valueB = b[sortField];
       }
       
       // Null/undefined values should come last regardless of sort direction
