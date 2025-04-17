@@ -19,7 +19,7 @@ const PhysicalAttributesInput: React.FC<PhysicalAttributesInputProps> = ({
   onChange,
 }) => {
   return (
-    <>
+    <React.Fragment>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="underbust">Underbust</Label>
@@ -67,7 +67,7 @@ const PhysicalAttributesInput: React.FC<PhysicalAttributesInputProps> = ({
           />
         </div>
       </div>
-    </>
+    </React.Fragment>
   );
 };
 
