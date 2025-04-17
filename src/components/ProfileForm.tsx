@@ -1,8 +1,6 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Profile, ProfileFormData } from "@/types";
 import { 
   Dialog, 
@@ -12,7 +10,15 @@ import {
   DialogDescription,
   DialogFooter
 } from "@/components/ui/dialog";
-import { X, Save, Link as LinkIcon } from "lucide-react";
+import { X, Save } from "lucide-react";
+
+// Import the sub-components
+import FormField from "./form/FormField";
+import ImagePreview from "./form/ImagePreview";
+import ProfileTypeSelector from "./form/ProfileTypeSelector";
+import MeasurementsInput from "./form/MeasurementsInput";
+import PhysicalAttributesInput from "./form/PhysicalAttributesInput";
+import SocialMediaInput from "./form/SocialMediaInput";
 
 interface ProfileFormProps {
   profile?: Profile;
@@ -113,260 +119,96 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => handleInputChange("name", e.target.value)}
-              placeholder="Profile name"
-              required
-            />
-          </div>
+          <FormField 
+            id="name"
+            label="Name"
+            value={formData.name}
+            onChange={(value) => handleInputChange("name", value)}
+            placeholder="Profile name"
+            required={true}
+          />
           
-          <div className="space-y-2">
-            <Label>Profile Image URL</Label>
-            <div className="flex items-center space-x-4">
-              <div className="h-24 w-24 bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden">
-                {previewUrl ? (
-                  <img 
-                    src={previewUrl} 
-                    alt="Preview" 
-                    className="h-full w-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = "https://via.placeholder.com/300x450?text=Error";
-                    }}
-                  />
-                ) : (
-                  <div className="h-full w-full flex items-center justify-center text-gray-400">
-                    No Image
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex-1">
-                <div className="flex">
-                  <Input
-                    value={formData.imageURL || ""}
-                    onChange={(e) => handleImageUrlChange(e.target.value)}
-                    placeholder="Image URL"
-                    className="flex-1"
-                  />
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Enter a valid image URL
-                </p>
-              </div>
-            </div>
-          </div>
+          <ImagePreview 
+            previewUrl={previewUrl}
+            imageURL={formData.imageURL || ""}
+            onImageUrlChange={handleImageUrlChange}
+          />
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="fictional">Type</Label>
-              <div className="flex space-x-2">
-                <Button
-                  type="button"
-                  variant={formData.isFictional === 0 ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleInputChange("isFictional", 0)}
-                >
-                  Real
-                </Button>
-                <Button
-                  type="button"
-                  variant={formData.isFictional === 1 ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleInputChange("isFictional", 1)}
-                >
-                  Fictional
-                </Button>
-              </div>
-            </div>
+            <ProfileTypeSelector 
+              isFictional={formData.isFictional || 0}
+              onChange={(value) => handleInputChange("isFictional", value)}
+            />
             
-            <div className="space-y-2">
-              <Label htmlFor="bra_size">Bra Size</Label>
-              <Input
-                id="bra_size"
-                value={formData.braSize || formData.bra_size || ""}
-                onChange={(e) => {
-                  handleInputChange("braSize", e.target.value);
-                  handleInputChange("bra_size", e.target.value);
-                }}
-                placeholder="e.g. 32B"
-              />
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label>Measurements</Label>
-            <div className="grid grid-cols-3 gap-2">
-              <div>
-                <Input
-                  value={formData.measurement_1 !== undefined ? formData.measurement_1 : formData.bust || ""}
-                  onChange={(e) => {
-                    const value = e.target.value ? parseFloat(e.target.value) : undefined;
-                    handleInputChange("measurement_1", value);
-                    handleInputChange("bust", value);
-                  }}
-                  placeholder="Bust"
-                  type="number"
-                  step="0.01"
-                />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">Bust</p>
-              </div>
-              <div>
-                <Input
-                  value={formData.measurement_2 !== undefined ? formData.measurement_2 : formData.waist || ""}
-                  onChange={(e) => {
-                    const value = e.target.value ? parseFloat(e.target.value) : undefined;
-                    handleInputChange("measurement_2", value);
-                    handleInputChange("waist", value);
-                  }}
-                  placeholder="Waist"
-                  type="number"
-                  step="0.01"
-                />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">Waist</p>
-              </div>
-              <div>
-                <Input
-                  value={formData.measurement_3 !== undefined ? formData.measurement_3 : formData.hips || ""}
-                  onChange={(e) => {
-                    const value = e.target.value ? parseFloat(e.target.value) : undefined;
-                    handleInputChange("measurement_3", value);
-                    handleInputChange("hips", value);
-                  }}
-                  placeholder="Hips"
-                  type="number"
-                  step="0.01"
-                />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">Hips</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="underbust">Underbust</Label>
-              <Input
-                id="underbust"
-                value={formData.underbust || ""}
-                onChange={(e) => handleInputChange("underbust", e.target.value ? parseFloat(e.target.value) : undefined)}
-                placeholder="Underbust"
-                type="number"
-                step="0.01"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="height">Height</Label>
-              <Input
-                id="height"
-                value={formData.height || ""}
-                onChange={(e) => handleInputChange("height", e.target.value ? parseFloat(e.target.value) : undefined)}
-                placeholder="Height (decimal, eg. 5.8 for 5'8\")"
-                type="number"
-                step="0.01"
-              />
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="hairColor">Hair Color</Label>
-              <Input
-                id="hairColor"
-                value={formData.hairColor || ""}
-                onChange={(e) => handleInputChange("hairColor", e.target.value)}
-                placeholder="Hair Color"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="traits">Traits</Label>
-              <Input
-                id="traits"
-                value={formData.traits || ""}
-                onChange={(e) => handleInputChange("traits", e.target.value)}
-                placeholder="Traits (separated by ;)"
-              />
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="work">Work/Origin</Label>
-            <Input
-              id="work"
-              value={formData.work || ""}
-              onChange={(e) => handleInputChange("work", e.target.value)}
-              placeholder="Work or Origin"
+            <FormField 
+              id="bra_size"
+              label="Bra Size"
+              value={formData.braSize || formData.bra_size || ""}
+              onChange={(value) => {
+                handleInputChange("braSize", value);
+                handleInputChange("bra_size", value);
+              }}
+              placeholder="e.g. 32B"
             />
           </div>
           
-          <div className="space-y-2">
-            <Label>Social Media</Label>
-            <div className="space-y-2">
-              <Input
-                value={formData.instagram_url || formData.instagram || ""}
-                onChange={(e) => {
-                  handleInputChange("instagram_url", e.target.value);
-                  handleInputChange("instagram", e.target.value);
-                }}
-                placeholder="Instagram URL or username"
-              />
-              <Input
-                value={formData.twitter_url || formData.twitter || ""}
-                onChange={(e) => {
-                  handleInputChange("twitter_url", e.target.value);
-                  handleInputChange("twitter", e.target.value);
-                }}
-                placeholder="Twitter URL or username"
-              />
-              <Input
-                value={formData.tiktok_url || formData.tiktok || ""}
-                onChange={(e) => {
-                  handleInputChange("tiktok_url", e.target.value);
-                  handleInputChange("tiktok", e.target.value);
-                }}
-                placeholder="TikTok URL or username"
-              />
-              <Input
-                value={formData.threads || ""}
-                onChange={(e) => handleInputChange("threads", e.target.value)}
-                placeholder="Threads URL or username"
-              />
-            </div>
-          </div>
+          <MeasurementsInput 
+            bust={formData.bust}
+            waist={formData.waist}
+            hips={formData.hips}
+            measurement1={formData.measurement_1}
+            measurement2={formData.measurement_2}
+            measurement3={formData.measurement_3}
+            onChange={handleInputChange}
+          />
           
-          <div className="space-y-2">
-            <Label htmlFor="babepedia">Babepedia URL</Label>
-            <Input
-              id="babepedia"
-              value={formData.babepedia || ""}
-              onChange={(e) => handleInputChange("babepedia", e.target.value)}
-              placeholder="Babepedia URL"
-            />
-          </div>
+          <PhysicalAttributesInput 
+            underbust={formData.underbust}
+            height={formData.height}
+            hairColor={formData.hairColor}
+            traits={formData.traits}
+            onChange={handleInputChange}
+          />
           
-          <div className="space-y-2">
-            <Label htmlFor="wikiURL">Wiki URL</Label>
-            <Input
-              id="wikiURL"
-              value={formData.wikiURL || ""}
-              onChange={(e) => handleInputChange("wikiURL", e.target.value)}
-              placeholder="Wiki URL"
-            />
-          </div>
+          <FormField 
+            id="work"
+            label="Work/Origin"
+            value={formData.work}
+            onChange={(value) => handleInputChange("work", value)}
+            placeholder="Work or Origin"
+          />
           
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Input
-              id="notes"
-              value={formData.notes || ""}
-              onChange={(e) => handleInputChange("notes", e.target.value)}
-              placeholder="Additional notes"
-            />
-          </div>
+          <SocialMediaInput 
+            instagram={formData.instagram_url || formData.instagram || ""}
+            twitter={formData.twitter_url || formData.twitter || ""}
+            tiktok={formData.tiktok_url || formData.tiktok || ""}
+            threads={formData.threads || ""}
+            onChange={handleInputChange}
+          />
+          
+          <FormField 
+            id="babepedia"
+            label="Babepedia URL"
+            value={formData.babepedia}
+            onChange={(value) => handleInputChange("babepedia", value)}
+            placeholder="Babepedia URL"
+          />
+          
+          <FormField 
+            id="wikiURL"
+            label="Wiki URL"
+            value={formData.wikiURL}
+            onChange={(value) => handleInputChange("wikiURL", value)}
+            placeholder="Wiki URL"
+          />
+          
+          <FormField 
+            id="notes"
+            label="Notes"
+            value={formData.notes}
+            onChange={(value) => handleInputChange("notes", value)}
+            placeholder="Additional notes"
+          />
           
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
