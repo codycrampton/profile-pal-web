@@ -1,15 +1,8 @@
+
 import { Profile, ProfileFormData } from "@/types";
 import { toast } from "sonner";
 import API_CONFIG from "@/config/api";
-
-// API configuration
-const API_CONFIG = {
-  endpoint: "http://192.168.50.84:3000"
-};
-
-export default API_CONFIG;
-
-const API_ENDPOINT = "http://192.168.50.84:3000/profiles";
+import { notionService } from "./notion";
 
 // Format height function
 export const formatHeight = (height: number | undefined, isMetric: number | undefined): string => {
@@ -72,25 +65,19 @@ const normalizeProfile = (profile: any): Profile => {
 export const api = {
   // Initialize data (no need for initialization with the server)
   init: async () => {
-    console.log('API service initialized with endpoint:', API_ENDPOINT);
+    console.log('API service initialized with Notion integration');
   },
 
   // Get all profiles
   getProfiles: async (): Promise<Profile[]> => {
     try {
-      console.log('Fetching profiles from API server...');
-      const response = await fetch(`${API_ENDPOINT}`);
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch profiles: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log('Profiles retrieved successfully:', data.length);
+      console.log('Fetching profiles from Notion API...');
+      const profiles = await notionService.getProfiles();
+      console.log('Profiles retrieved successfully:', profiles.length);
       
-      return data.map(normalizeProfile);
+      return profiles.map(normalizeProfile);
     } catch (error) {
-      console.error('Failed to fetch profiles from API server:', error);
+      console.error('Failed to fetch profiles from Notion API:', error);
       toast.error(`Failed to load profiles: ${error instanceof Error ? error.message : 'Unknown error'}`);
       return [];
     }
@@ -99,28 +86,16 @@ export const api = {
   // Create a new profile
   createProfile: async (profile: ProfileFormData): Promise<Profile> => {
     try {
-      // Generate a UUID for the new profile
+      // Generate a UUID for the new profile (Notion will actually assign its own ID)
       const newProfile = {
         ...profile,
-        id: crypto.randomUUID()
       };
       
-      // Send to server
-      const response = await fetch(`${API_ENDPOINT}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newProfile),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create profile');
-      }
+      // Send to Notion
+      const createdProfile = await notionService.createProfile(newProfile);
       
       toast.success(`Profile "${profile.name}" created successfully`);
-      return normalizeProfile(newProfile);
+      return normalizeProfile(createdProfile);
     } catch (error) {
       console.error("Failed to create profile:", error);
       toast.error(`Failed to create profile: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -131,22 +106,11 @@ export const api = {
   // Update an existing profile
   updateProfile: async (id: number | string, profile: ProfileFormData): Promise<Profile> => {
     try {
-      // Send to server
-      const response = await fetch(`${API_ENDPOINT}/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({...profile, id}),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update profile');
-      }
+      // Send to Notion
+      const updatedProfile = await notionService.updateProfile(id, profile);
       
       toast.success(`Profile "${profile.name}" updated successfully`);
-      return normalizeProfile({ ...profile, id });
+      return normalizeProfile(updatedProfile);
     } catch (error) {
       console.error("Failed to update profile:", error);
       toast.error(`Failed to update profile: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -157,15 +121,8 @@ export const api = {
   // Delete a profile
   deleteProfile: async (id: number | string): Promise<void> => {
     try {
-      // Send to server
-      const response = await fetch(`${API_ENDPOINT}/${id}`, {
-        method: 'DELETE',
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete profile');
-      }
+      // Send to Notion
+      await notionService.deleteProfile(id);
       
       toast.success(`Profile deleted successfully`);
     } catch (error) {
