@@ -39,7 +39,7 @@ const PhysicalAttributesInput: React.FC<PhysicalAttributesInputProps> = ({
             id="height"
             value={height || ""}
             onChange={(e) => onChange("height", e.target.value ? parseFloat(e.target.value) : undefined)}
-            placeholder="Height (decimal, eg. 5.8 for 5'8\")"
+            placeholder="Height (decimal, eg. 5.8 for 5'8'')"
             type="number"
             step="0.01"
           />

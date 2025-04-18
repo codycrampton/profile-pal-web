@@ -26,7 +26,7 @@ const App = () => {
   useEffect(() => {
     const initializeApp = async () => {
       await api.init();
-      console.log('Application initialized with data from repository');
+      console.log('Application initialized and connected to API server');
     };
     
     initializeApp();
