@@ -12,14 +12,12 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install express better-sqlite3
 
-# Copy server files
-COPY server.js ./
-
 # Create data directory for SQLite
 RUN mkdir -p /app/data
 
 # Expose port
 EXPOSE 3000
 
-CMD ["node", "server.js"]
-
+# We're not copying server.js since it's already on the Raspberry Pi
+# Use a CMD that will run the server if it exists, or show an error
+CMD ["sh", "-c", "if [ -f server.js ]; then node server.js; else echo 'server.js not found, please mount it as a volume'; fi"]
