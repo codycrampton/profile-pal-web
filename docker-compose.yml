@@ -7,7 +7,7 @@ services:
       - "3005:3005"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3005/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://192.168.50.84:3005/health"]
       interval: 30s
       timeout: 10s
       retries: 3
