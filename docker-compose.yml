@@ -21,7 +21,7 @@ services:
       dockerfile: Dockerfile.server
     container_name: profiles-api
     ports:
-      - "3001:3000"
+      - "3008:3008"
     volumes:
       - ./data:/app/data
       - ./server.js:/app/server.js
