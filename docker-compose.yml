@@ -14,21 +14,3 @@ services:
       start_period: 10s
     networks:
       - profiles-network
-
-  profiles-api:
-    build:
-      context: .
-      dockerfile: Dockerfile.server
-    container_name: profiles-api
-    ports:
-      - "3008:3008"
-    volumes:
-      - ./data:/app/data
-      - ./server.js:/app/server.js
-    restart: unless-stopped
-    networks:
-      - profiles-network
-
-networks:
-  profiles-network:
-    driver: bridge
