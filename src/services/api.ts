@@ -1,10 +1,15 @@
-
 import { Profile, ProfileFormData } from "@/types";
 import { toast } from "sonner";
 import API_CONFIG from "@/config/api";
 
 // API configuration
-const API_ENDPOINT = API_CONFIG.endpoint;
+const API_CONFIG = {
+  endpoint: "http://192.168.50.84:3000"
+};
+
+export default API_CONFIG;
+
+const API_ENDPOINT = "http://192.168.50.84:3000/profiles";
 
 // Format height function
 export const formatHeight = (height: number | undefined, isMetric: number | undefined): string => {
@@ -74,7 +79,7 @@ export const api = {
   getProfiles: async (): Promise<Profile[]> => {
     try {
       console.log('Fetching profiles from API server...');
-      const response = await fetch(`${API_ENDPOINT}/profiles`);
+      const response = await fetch(`${API_ENDPOINT}`);
 
       if (!response.ok) {
         throw new Error(`Failed to fetch profiles: ${response.statusText}`);
@@ -101,7 +106,7 @@ export const api = {
       };
       
       // Send to server
-      const response = await fetch(`${API_ENDPOINT}/profiles`, {
+      const response = await fetch(`${API_ENDPOINT}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -127,7 +132,7 @@ export const api = {
   updateProfile: async (id: number | string, profile: ProfileFormData): Promise<Profile> => {
     try {
       // Send to server
-      const response = await fetch(`${API_ENDPOINT}/profiles/${id}`, {
+      const response = await fetch(`${API_ENDPOINT}/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -153,7 +158,7 @@ export const api = {
   deleteProfile: async (id: number | string): Promise<void> => {
     try {
       // Send to server
-      const response = await fetch(`${API_ENDPOINT}/profiles/${id}`, {
+      const response = await fetch(`${API_ENDPOINT}/${id}`, {
         method: 'DELETE',
       });
       
