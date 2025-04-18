@@ -1,4 +1,3 @@
-
 services:
   profiles-app:
     build: .
@@ -14,3 +13,7 @@ services:
       start_period: 10s
     networks:
       - profiles-network
+
+networks:
+  profiles-network:
+    driver: bridge
