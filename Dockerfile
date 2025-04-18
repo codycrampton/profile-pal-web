@@ -12,6 +12,9 @@ RUN npm ci
 # Copy all files
 COPY . .
 
+# Update API endpoint in config
+RUN sed -i 's|http://localhost:3000|http://profiles-api:3000|g' src/config/api.ts
+
 # Build the app
 RUN npm run build
 
@@ -28,3 +31,4 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 3005
 
 CMD ["nginx", "-g", "daemon off;"]
+

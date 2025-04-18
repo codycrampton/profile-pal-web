@@ -17,6 +17,20 @@ services:
     networks:
       - profiles-network
 
+  profiles-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: profiles-api
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+    networks:
+      - profiles-network
+
 networks:
   profiles-network:
     driver: bridge
+
